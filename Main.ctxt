@@ -1,0 +1,23 @@
+#BlueJ class context
+comment0.target=Main
+comment1.params=
+comment1.target=void\ ranGen()
+comment10.params=args
+comment10.target=void\ main(java.lang.String[])
+comment2.params=
+comment2.target=void\ wipe()
+comment3.params=board
+comment3.target=void\ display(int[][])
+comment4.params=arr\ mode
+comment4.target=boolean\ isCompressible(int[],\ char)
+comment5.params=
+comment5.target=int\ slotsEmpty()
+comment6.params=
+comment6.target=int\ isGameOver()
+comment7.params=direction
+comment7.target=void\ compress(char)
+comment8.params=direction
+comment8.target=void\ merge(char)
+comment9.params=direction
+comment9.target=boolean\ isMergePoss(char)
+numComments=11
