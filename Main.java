@@ -49,49 +49,6 @@ public class Main{
             System.out.print("\n\n");
         }
     }
-
-    static boolean isCompressible(int arr[], char mode){
-        boolean zSeries = true;
-        switch (mode) {
-            case 'W':
-                for(int i = arr.length-1; i >=0; i--){
-                    if(zSeries && arr[i] !=0){
-                        zSeries = false;
-                    }
-                    if ((zSeries == false) && (arr[i] == 0)) return true;
-                }
-                break;
-            case 'S':
-                for(int i = 0; i <arr.length; i++){
-                    if(zSeries && arr[i] !=0){
-                        zSeries = false;
-                    }
-                    if ((zSeries == false) && (arr[i] == 0)) return true;
-                }
-                break;
-            case 'A':
-                for(int i = arr.length-1; i >=0; i--){
-                    if(zSeries && arr[i] !=0){
-                        zSeries = false;
-                    }
-                    if ((zSeries == false) && (arr[i] == 0)) return true;
-                }
-                break;
-            case 'D':
-                for(int i = 0; i <arr.length; i++){
-                    if(zSeries && arr[i] !=0){
-                        zSeries = false;
-                    }
-                    if ((zSeries == false) && (arr[i] == 0)) return true;
-                }
-                break;
-        
-            default:
-                break;
-        }
-        
-        return false;
-    }
     
     static int slotsEmpty(){
         int count = 0;
@@ -121,74 +78,41 @@ public class Main{
         }
     }
 
-    static void compress(char direction){
-        switch (direction) {
-            case 'W':
-                for (int i = 0; i < board[0].length; i++){
-                    int NSarrray[] = {board[0][i],board[1][i],board[2][i],board[3][i]};
-                    while (isCompressible(NSarrray, 'W')) {
-                        int prevDigit = 7; // initialising with any random no. except 0
-                        for (int j = 0; j <NSarrray.length; j++){
-                            if (prevDigit == 0){
-                                NSarrray[j-1] = NSarrray[j];
-                                NSarrray[j] = 0;
-                            }
-                            prevDigit = NSarrray[j];
-                        }
-                    }
-
-                    for (int k =0; k <NSarrray.length; k++){
-                        board[k][i] = NSarrray[k];
-                    }
+    static void compress(int[] v){
+        boolean swapped = true; // to displace again and again until all the values are displace completely
+        int startX, startY, endX, endY;
+        // calculating the starting and ending value for the loop to iterate
+        if(v[0] < 0 || v[1] < 0){
+            startX = Math.abs(v[0]);
+            startY = Math.abs(v[1]);
+            endY = board.length;
+            endX = board[0].length;
+        }else{
+            startX = 0;
+            startY = 0;
+            endY = board.length-v[1];
+            endX = board[0].length-v[0];
+        }
+        while(swapped){
+            swapped = false;
+            for(int y = startY; y<endY; y++){
+                // recalculating the ending values for the arrays that are not perfect( i mean have different lengths)
+                if(v[0] < 0 || v[1] < 0){
+                    endY = board.length;
+                    endX = board[y].length;
+                }else{
+                    endY = board.length-v[1];
+                    endX = board[y].length-v[0];
                 }
-                break;
-            case 'S':
-            for (int i = 0; i < board[0].length; i++){
-                int NSarrray[] = {board[0][i],board[1][i],board[2][i],board[3][i]};
-                while (isCompressible(NSarrray, 'S')) {
-                    for (int j = 0; j < board[0].length-1; j++){
-                        if (NSarrray[j+1] == 0){
-                            NSarrray[j+1] = NSarrray[j];
-                            NSarrray[j] = 0;
-                        }
+                for(int x = startX; x<endX; x++){
+                    if(board[y][x] > 0 && board[y+v[1]][x+v[0]] == 0){
+                        board[y+v[1]][x+v[0]] = board[y][x];
+                        board[y][x] = 0;
+                        swapped  = true;
                     }
-                }
-
-                for (int k =0; k <NSarrray.length; k++){
-                    board[k][i] = NSarrray[k];
                 }
             }
-                break;
-            case 'A':
-                for (int i = 0; i < board[0].length; i++){
-                    while (isCompressible(board[i],'A')){
-                        int prevDigit = 7; // initialising with any random no. except 0
-                        for (int j = 0; j <board[0].length; j++){
-                            if (prevDigit == 0){
-                                board[i][j-1] = board[i][j];
-                                board[i][j] = 0;
-                            }
-                            prevDigit = board[i][j];
-                        }
-                    }
-                }
-                break;
-            case 'D':
-                for (int i = 0; i < board[0].length; i++){ 
-                    while (isCompressible(board[i],'D')){
-                        for (int j = 0; j < board[0].length-1; j++){
-                            if (board[i][j+1] == 0){
-                                board[i][j+1] = board[i][j];
-                                board[i][j] = 0;
-                            }
-                        }
-                    }
-                }
-                break;
-            default:
-                break;
         }
-        
     }
 
     static void merge(char direction){
@@ -290,16 +214,21 @@ public class Main{
 
         while (isGameOver() == 0){
             char inp = in.next().charAt(0);
-            compress(inp);
+            int[] v = new int[2];
+            switch(inp){
+                case 'W': v[0] =  0; v[1] = 1; break;
+                case 'A': v[0] = -1; v[1] = 0; break;
+                case 'S': v[0] =  0; v[1] = 1; break;
+                case 'D': v[0] =  1; v[1] = 0; break;
+            }
+            compress(v);
             merge(inp);
-            compress(inp);
+            compress(v);
             ranGen();
             display(board);
         }
         if(isGameOver() == 1)System.out.println("You win");
         else System.out.println("You Lose");
-        
+        in.close();
     }
-
-    
 }
