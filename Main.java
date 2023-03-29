@@ -2,34 +2,29 @@ import java.util.Scanner;
 
 public class Main{
     public static int board[][] = new int[4][4];
+    static int[] n = {0,1};
+    static int[] e = {1,0};
+    static int[] s = {0, -1};
+    static int[] w = {-1,0};
 
     static void ranGen(){
-        int ranRow[] = new int[2];
-        for (int i = 0; i < ranRow.length; i++) {
-            ranRow[i] = (int) Math.round(Math.random()*3);
-        }
-        int ranCol[] = new int[2];
-        for (int i = 0; i < ranCol.length; i++) {
-            ranCol[i] = (int) Math.round(Math.random()*3);
-        }
-        
-        if (slotsEmpty() > 1){
-            if (board[ranRow[0]][ranCol[0]] == 0 && board[ranRow[1]][ranCol[1]]==0){
-                for (int i =0; i<2; i++){
-                    board[ranRow[i]][ranCol[i]] = (int) (Math.round(Math.random()+1) *2);
+        if(slotsEmpty()==0) return;
+        int[][] possibleGenerations = new int[16][2];
+        int k = 0;
+        for(int y = 0; y<board.length; y++){
+            for(int x = 0; x<board[y].length; x++){
+                if(board[x][y] == 0) {
+                    possibleGenerations[k][0] = x;
+                    possibleGenerations[k][1] = y;
+                    k++;
                 }
-            }else{
-                ranGen();
-            } 
-        }else{
-            if (board[ranRow[0]][ranCol[0]] == 0){
-                    board[ranRow[0]][ranCol[0]] = (int) (Math.round(Math.random()+1) *2);
-            }else{
-                ranGen();
-            } 
+            }
         }
         
-        // TODO: if only one blank is there it gives error coz of two random variables
+        int randomPos = (int) (Math.random()*(k+1));
+        int randomValues[] = {2,4};
+        board[possibleGenerations[randomPos][0]][possibleGenerations[randomPos][1]] = randomValues[(int)(Math.random()*2)];
+        
     }
 
     static void wipe(){
@@ -38,6 +33,7 @@ public class Main{
                 board[i][j] = 0;
             }
         }
+        ranGen();
         ranGen();
     }
 
@@ -63,19 +59,19 @@ public class Main{
     static int isGameOver(){
         int zCount = 0;
         for(int i =0; i<board.length; i++){
-            for(int j =0; j<board[0].length; j++){
-                if (board[i][j] == 2048){
+            for(int j =0; j<board[i].length; j++){
+                if (board[j][i] == 2048){
                     return 1;
-                }else if(board[i][j] == 0){
+                }
+                if(board[j][i] == 0){
                     zCount++;
                 }
             }
         }
-        if(zCount > 0 || isMergePoss('W') || isMergePoss('A') || isMergePoss('S') || isMergePoss('D')){
-            return 0;
-        }else{
+        if(zCount == 0 && !isMergePoss()){
             return -1;
         }
+        return 0; // ongoing
     }
 
     static void compress(int[] v){
@@ -115,93 +111,55 @@ public class Main{
         }
     }
 
-    static void merge(char direction){
-        switch (direction) {
-            case 'W':
-            case 'S':
-            for(int i=0; i<board.length; i++){
-                int NSarrray[] = new int[4];
-                for(int j=0; j<board.length;j++){
-                    NSarrray[j] = board[j][i];
+    static void merge(int[] v){
+        boolean swapped = true; // to displace again and again until all the values are displace completely
+        int startX, startY, endX, endY;
+        // calculating the starting and ending value for the loop to iterate
+        if(v[0] < 0 || v[1] < 0){
+            startX = Math.abs(v[0]);
+            startY = Math.abs(v[1]);
+            endY = board.length;
+            endX = board[0].length;
+        }else{
+            startX = 0;
+            startY = 0;
+            endY = board.length-v[1];
+            endX = board[0].length-v[0];
+        }
+        while(swapped){
+            swapped = false;
+            for(int y = startY; y<endY; y++){
+                // recalculating the ending values for the arrays that are not perfect( i mean have different lengths)
+                if(v[0] < 0 || v[1] < 0){
+                    endY = board.length;
+                    endX = board[y].length;
+                }else{
+                    endY = board.length-v[1];
+                    endX = board[y].length-v[0];
                 }
-                for (int k = 0; k<NSarrray.length-1; k++){
-                    if (NSarrray[k] == NSarrray[k+1]){
-                        NSarrray[k] = NSarrray[k] + NSarrray[k+1];
-                        NSarrray[k+1] = 0;
+                for(int x = startX; x<endX; x++){
+                    if(board[y][x] == board[y+v[1]][x+v[0]] && board[y][x] != 0){
+                        board[y][x] = board[y+v[1]][x+v[0]] + board[y][x];
+                        board[y+v[1]][x+v[0]] = 0;
+                        swapped  = true;
                     }
-                }
-                for (int k =0; k <NSarrray.length; k++){
-                    board[k][i] = NSarrray[k];
                 }
             }
-
-                
-                break;
-            case 'A':
-            case 'D':
-                for(int i=0; i<board.length; i++){
-                    int WEarray[] = new int[4];
-                    for(int j = 0; j<board.length;j++){
-                        WEarray[j] = board[i][j];
-                    }
-                    for (int k = 0; k<WEarray.length-1; k++){
-                        if (WEarray[k] == WEarray[k+1]){
-                            WEarray[k] = WEarray[k] + WEarray[k+1];
-                            WEarray[k+1] = 0;
-                        }
-                    }
-                    for (int k =0; k <WEarray.length; k++){
-                        board[i][k] = WEarray[k];
-                    }
-                }
-                break;
-        
-            default:
-                break;
-        } 
+        }
     }
     
-    static boolean isMergePoss(char direction){
-        switch (direction) {
-            case 'W':
-            case 'S':
-            for(int i=0; i<board.length; i++){
-                int NSarrray[] = new int[4];
-                for(int j=0; j<board.length;j++){
-                    NSarrray[j] = board[j][i];
-                }
-                for (int k = 0; k<NSarrray.length-1; k++){
-                    if (NSarrray[k] == NSarrray[k+1]){
-                        return true;
+    static boolean isMergePoss(){
+        for(int i = 0; i<board.length; i++){
+            for(int j = 0; j<board[i].length; j++){
+                int[][] valIndex = {{j+n[0], i+n[1]}, {j+s[0], i+s[1]}, {j+e[0], i+e[1]}, {j+w[0], i+w[1]}};
+                for(int k = 0; k<valIndex.length; k++){
+                    if(valIndex[k][0]>=0 && valIndex[k][1]>=0){
+                    if(valIndex[k][0]<4 && valIndex[k][1]<4){
+                        if(board[j][i] == board[valIndex[k][0]][valIndex[k][1]] && board[j][i] != 0) return true;
                     }
-                }
-                for (int k =0; k <NSarrray.length; k++){
-                    board[k][i] = NSarrray[k];
+                    }
                 }
             }
-
-                
-                break;
-            case 'A':
-            case 'D':
-                for(int i=0; i<board.length; i++){
-                    int WEarray[] = new int[4];
-                    for(int j = 0; j<board.length;j++){
-                        WEarray[j] = board[i][j];
-                    }
-                    for (int k = 0; k<WEarray.length-1; k++){
-                        if (WEarray[k] == WEarray[k+1]){
-                            return true;
-                        }
-                    }
-                    for (int k =0; k <WEarray.length; k++){
-                        board[i][k] = WEarray[k];
-                    }
-                }
-                break;
-        
-            default:
-                break;
         }
         return false;
     }
@@ -211,24 +169,26 @@ public class Main{
         System.out.println("2048");
         wipe();
         display(board);
-
-        while (isGameOver() == 0){
+        int gameOverStatus = 0;
+        while (gameOverStatus == 0){
             char inp = in.next().charAt(0);
             int[] v = new int[2];
             switch(inp){
-                case 'W': v[0] =  0; v[1] = 1; break;
-                case 'A': v[0] = -1; v[1] = 0; break;
-                case 'S': v[0] =  0; v[1] = 1; break;
-                case 'D': v[0] =  1; v[1] = 0; break;
+                case 'W': v[0] =  0; v[1] = -1; break;
+                case 'A': v[0] = -1; v[1] =  0; break;
+                case 'S': v[0] =  0; v[1] =  1; break;
+                case 'D': v[0] =  1; v[1] =  0; break;
             }
             compress(v);
-            merge(inp);
+            merge(v);
             compress(v);
             ranGen();
             display(board);
+            
+            gameOverStatus = isGameOver();
         }
-        if(isGameOver() == 1)System.out.println("You win");
-        else System.out.println("You Lose");
+        if(gameOverStatus == 1)System.out.println("You win");
+        else if(gameOverStatus == -1) System.out.println("You Lose");
         in.close();
     }
 }
