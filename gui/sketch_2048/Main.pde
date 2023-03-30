@@ -7,7 +7,7 @@ public class Main{
 
      void ranGen(){
         if(slotsEmpty()==0) return;
-        int[][] possibleGenerations = new int[16][2];
+        int[][] possibleGenerations = new int[17][2];
         int k = 0;
         for(int y = 0; y<board.length; y++){
             for(int x = 0; x<board[y].length; x++){
@@ -25,7 +25,7 @@ public class Main{
         
     }
 
-     void wipe(){
+     public void wipe(){
         for (int i = 0; i<board[0].length; i++){
             for (int j = 0; j<board[i].length; j++){
                 board[i][j] = 0;
@@ -36,13 +36,18 @@ public class Main{
     }
 
      void display(){
-        float d = 600/4;
+        float d = (600-30)/4;
         for(int i = 0; i<board.length; i++){
           for(int j = 0; j<board[i].length; j++){
-            fill(255);
-            rect(j*d, i*d, d ,d);
-            fill(0);
-            text("" + board[i][j], j*d+50, i*d+50);
+            int c = 255-(int)map(board[i][j], 0,2048,0,16777215);
+            int r = (c>>8)&0xff;
+            int g = (c>>16)&0xff; 
+            int b = (c>>24)&0xff;
+            fill(r,g,b);
+            rect(j*d, i*d, d ,d,10);
+            fill(255-((r+g+b)/3));
+            textSize(50);
+            text("" + board[i][j], j*d+50, i*d+90);
           }
         }
     }
@@ -165,31 +170,4 @@ public class Main{
         return false;
     }
 
-    public void main(String[] args){
-        Scanner in = new Scanner(System.in);
-        System.out.println("2048");
-        wipe();
-        display(board);
-        int gameOverStatus = 0;
-        while (gameOverStatus == 0){
-            char inp = in.next().charAt(0);
-            int[] v = new int[2];
-            switch(inp){
-                case 'W': v[0] =  0; v[1] = -1; break;
-                case 'A': v[0] = -1; v[1] =  0; break;
-                case 'S': v[0] =  0; v[1] =  1; break;
-                case 'D': v[0] =  1; v[1] =  0; break;
-            }
-            compress(v);
-            merge(v);
-            compress(v);
-            ranGen();
-            display(board);
-            
-            gameOverStatus = isGameOver();
-        }
-        if(gameOverStatus == 1)System.out.println("You win");
-        else if(gameOverStatus == -1) System.out.println("You Lose");
-        in.close();
-    }
 }
