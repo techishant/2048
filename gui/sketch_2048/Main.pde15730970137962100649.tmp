@@ -7,7 +7,7 @@ public class Main{
 
      void ranGen(){
         if(slotsEmpty()==0) return;
-        int[][] possibleGenerations = new int[16][2];
+        int[][] possibleGenerations = new int[17][2];
         int k = 0;
         for(int y = 0; y<board.length; y++){
             for(int x = 0; x<board[y].length; x++){
@@ -21,7 +21,6 @@ public class Main{
         
         int randomPos = (int) (Math.random()*(k+1));
         int randomValues[] = {2,4};
-        println("Helo" + randomPos);
         board[possibleGenerations[randomPos][0]][possibleGenerations[randomPos][1]] = randomValues[(int)(Math.random()*2)];
         
     }
@@ -37,13 +36,16 @@ public class Main{
     }
 
      void display(){
-        float d = 600/4;
+        float d = (600-30)/4;
         for(int i = 0; i<board.length; i++){
           for(int j = 0; j<board[i].length; j++){
-            float c = 512/(board[i][j]+1);
-            fill(c);
-            rect(j*d, i*d, d ,d);
-            fill(255-c);
+            int c = 255-(int)map(board[i][j], 0,2048,0,16777215);
+            int r = (c>>8)&0xff;
+            int g = (c>>16)&0xff; 
+            int b = (c>>24)&0xff;
+            fill(r,g,b);
+            rect(j*d, i*d, d ,d,10);
+            fill(255-((r+g+b)/3));
             textSize(50);
             text("" + board[i][j], j*d+50, i*d+90);
           }
